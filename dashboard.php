@@ -222,8 +222,7 @@ tr:nth-child(even){
         </div>
     </div>
 
-    <!-- ADD BUTTON -->
-    <a href="addproduct.php" class="add-btn">+ Add Product</a>
+   
 
     <!-- SEARCH + SORT -->
     <div class="tools">
