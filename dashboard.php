@@ -2,12 +2,13 @@
 session_start();
 include("db.php");
 
-// FIXED session check (make sure this matches login.php)
+// SESSION CHECK
 if(!isset($_SESSION['user'])){
     header("Location: login.php");
     exit();
 }
 
+/* MAIN TABLE QUERY */
 $query = "
 SELECT p.id, p.product_name, c.category_name, s.supplier_name, p.quantity, p.price
 FROM products p
@@ -20,12 +21,33 @@ $result = $conn->query($query);
 if(!$result){
     die("SQL Error: " . $conn->error);
 }
+
+/* CHART QUERY (NEW) */
+$catQuery = "
+SELECT c.category_name, COUNT(p.id) as total
+FROM products p
+INNER JOIN categories c ON p.category_id = c.id
+GROUP BY c.category_name
+";
+
+$catResult = $conn->query($catQuery);
+
+$categories = [];
+$totals = [];
+
+while($row = $catResult->fetch_assoc()){
+    $categories[] = $row['category_name'];
+    $totals[] = $row['total'];
+}
 ?>
 
 <!DOCTYPE html>
 <html>
 <head>
     <title>VaultInventory Dashboard</title>
+
+    <!-- CHART.JS LIBRARY -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <style>
         body {
@@ -34,7 +56,6 @@ if(!$result){
             background: #f4f4f4;
         }
 
-        /* HEADER */
         .header {
             background: #2c3e50;
             color: white;
@@ -43,7 +64,6 @@ if(!$result){
             position: relative;
         }
 
-        /* LOGOUT BUTTON */
         .logout {
             position: absolute;
             right: 20px;
@@ -55,7 +75,6 @@ if(!$result){
             border-radius: 5px;
         }
 
-        /* CONTAINER */
         .container {
             width: 90%;
             margin: auto;
@@ -66,7 +85,6 @@ if(!$result){
             box-shadow: 0px 0px 10px rgba(0,0,0,0.1);
         }
 
-        /* ADD BUTTON */
         .add-btn{
             display:inline-block;
             margin-bottom:15px;
@@ -82,7 +100,6 @@ if(!$result){
             background:#27ae60;
         }
 
-        /* EDIT & DELETE BUTTONS */
         .btn {
             padding: 5px 10px;
             text-decoration: none;
@@ -91,15 +108,9 @@ if(!$result){
             font-size: 12px;
         }
 
-        .edit {
-            background: #3498db;
-        }
+        .edit { background: #3498db; }
+        .delete { background: #e74c3c; }
 
-        .delete {
-            background: #e74c3c;
-        }
-
-        /* TABLE */
         table {
             width: 100%;
             border-collapse: collapse;
@@ -121,6 +132,10 @@ if(!$result){
             background: #f2f2f2;
         }
 
+        /* CHART BOX */
+        .chart-box{
+            margin-bottom: 30px;
+        }
     </style>
 </head>
 
@@ -136,6 +151,13 @@ if(!$result){
     <!-- ADD PRODUCT BUTTON -->
     <a href="addproduct.php" class="add-btn">+ Add Product</a>
 
+    <!-- CHART SECTION -->
+    <div class="chart-box">
+        <h3>Products per Category</h3>
+        <canvas id="myChart"></canvas>
+    </div>
+
+    <!-- TABLE -->
     <table>
         <tr>
             <th>Product</th>
@@ -163,6 +185,38 @@ if(!$result){
     </table>
 
 </div>
+
+<!-- CHART SCRIPT -->
+<script>
+const ctx = document.getElementById('myChart');
+
+new Chart(ctx, {
+    type: 'bar',
+    data: {
+        labels: <?= json_encode($categories) ?>,
+        datasets: [{
+            label: 'Number of Products',
+            data: <?= json_encode($totals) ?>,
+            backgroundColor: [
+                '#3498db',
+                '#2ecc71',
+                '#e74c3c',
+                '#f1c40f',
+                '#9b59b6'
+            ],
+            borderWidth: 1
+        }]
+    },
+    options: {
+        responsive: true,
+        scales: {
+            y: {
+                beginAtZero: true
+            }
+        }
+    }
+});
+</script>
 
 </body>
 </html>
