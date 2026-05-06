@@ -65,10 +65,22 @@ body{
     left:0;
     color:white;
     padding-top:20px;
+    text-align:center;
 }
 
-.sidebar h3{
-    text-align:center;
+/* LOGO */
+.logo-box img{
+    width:70px;
+    height:70px;
+    object-fit:cover;
+    border-radius:10px;
+    background:white;
+    padding:5px;
+}
+
+.logo-box h3{
+    margin:10px 0;
+    font-size:16px;
 }
 
 .sidebar a{
@@ -76,6 +88,8 @@ body{
     color:white;
     padding:12px;
     text-decoration:none;
+    text-align:left;
+    padding-left:20px;
 }
 
 .sidebar a:hover{
@@ -97,14 +111,6 @@ body{
     display:flex;
     justify-content:space-between;
     align-items:center;
-}
-
-.logout{
-    background:red;
-    color:white;
-    padding:8px 12px;
-    border-radius:5px;
-    text-decoration:none;
 }
 
 /* CARDS */
@@ -189,7 +195,13 @@ tr:nth-child(even){
 
 <!-- SIDEBAR -->
 <div class="sidebar">
-    <h3>VaultInventory</h3>
+
+    <!-- LOGO -->
+    <div class="logo-box">
+        <img src="logo.png" alt="Logo">
+        
+    </div>
+
     <a href="dashboard.php">Dashboard</a>
     <a href="addproduct.php">Add Product</a>
     <a href="logout.php">Logout</a>
@@ -201,7 +213,6 @@ tr:nth-child(even){
     <!-- HEADER -->
     <div class="header">
         <h2>Warehouse & Supplier Tracker</h2>
-        
     </div>
 
     <!-- CARDS -->
@@ -221,8 +232,6 @@ tr:nth-child(even){
             <p>Status</p>
         </div>
     </div>
-
-   
 
     <!-- SEARCH + SORT -->
     <div class="tools">
