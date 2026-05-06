@@ -22,7 +22,7 @@ if(!$result){
     die("SQL Error: " . $conn->error);
 }
 
-/* CHART QUERY (NEW) */
+/* CHART QUERY */
 $catQuery = "
 SELECT c.category_name, COUNT(p.id) as total
 FROM products p
@@ -46,7 +46,6 @@ while($row = $catResult->fetch_assoc()){
 <head>
     <title>VaultInventory Dashboard</title>
 
-    <!-- CHART.JS LIBRARY -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <style>
@@ -87,7 +86,7 @@ while($row = $catResult->fetch_assoc()){
 
         .add-btn{
             display:inline-block;
-            margin-bottom:15px;
+            margin-bottom:10px;
             padding:10px 15px;
             background:#2ecc71;
             color:white;
@@ -98,6 +97,16 @@ while($row = $catResult->fetch_assoc()){
 
         .add-btn:hover{
             background:#27ae60;
+        }
+
+        /* SEARCH + SORT */
+        .tools{
+            margin: 10px 0;
+        }
+
+        input, select{
+            padding:8px;
+            margin-right:10px;
         }
 
         .btn {
@@ -132,9 +141,9 @@ while($row = $catResult->fetch_assoc()){
             background: #f2f2f2;
         }
 
-        /* CHART BOX */
         .chart-box{
             margin-bottom: 30px;
+            max-width: 500px;
         }
     </style>
 </head>
@@ -148,17 +157,29 @@ while($row = $catResult->fetch_assoc()){
 
 <div class="container">
 
-    <!-- ADD PRODUCT BUTTON -->
+    <!-- ADD BUTTON -->
     <a href="addproduct.php" class="add-btn">+ Add Product</a>
 
-    <!-- CHART SECTION -->
+    <!-- SEARCH + SORT -->
+    <div class="tools">
+        <input type="text" id="searchInput" placeholder="Search product...">
+
+        <select id="sortSelect">
+            <option value="">Sort By</option>
+            <option value="name">Product Name</option>
+            <option value="price">Price</option>
+            <option value="qty">Quantity</option>
+        </select>
+    </div>
+
+    <!-- CHART -->
     <div class="chart-box">
         <h3>Products per Category</h3>
         <canvas id="myChart"></canvas>
     </div>
 
     <!-- TABLE -->
-    <table>
+    <table id="productTable">
         <tr>
             <th>Product</th>
             <th>Category</th>
@@ -197,14 +218,7 @@ new Chart(ctx, {
         datasets: [{
             label: 'Number of Products',
             data: <?= json_encode($totals) ?>,
-            backgroundColor: [
-                '#3498db',
-                '#2ecc71',
-                '#e74c3c',
-                '#f1c40f',
-                '#9b59b6'
-            ],
-            borderWidth: 1
+            backgroundColor: '#3498db'
         }]
     },
     options: {
@@ -215,6 +229,54 @@ new Chart(ctx, {
             }
         }
     }
+});
+</script>
+
+<!-- SEARCH + SORT SCRIPT -->
+<script>
+// SEARCH
+document.getElementById("searchInput").addEventListener("keyup", function() {
+    let value = this.value.toLowerCase();
+    let rows = document.querySelectorAll("#productTable tr");
+
+    rows.forEach((row, index) => {
+        if(index === 0) return;
+
+        row.style.display = row.innerText.toLowerCase().includes(value) ? "" : "none";
+    });
+});
+
+// SORT
+document.getElementById("sortSelect").addEventListener("change", function() {
+    let table = document.getElementById("productTable");
+    let rows = Array.from(table.rows).slice(1);
+    let value = this.value;
+
+    rows.sort((a, b) => {
+        let A, B;
+
+        if(value === "name"){
+            A = a.cells[0].innerText.toLowerCase();
+            B = b.cells[0].innerText.toLowerCase();
+            return A.localeCompare(B);
+        }
+
+        if(value === "price"){
+            A = parseFloat(a.cells[4].innerText);
+            B = parseFloat(b.cells[4].innerText);
+            return A - B;
+        }
+
+        if(value === "qty"){
+            A = parseInt(a.cells[3].innerText);
+            B = parseInt(b.cells[3].innerText);
+            return A - B;
+        }
+
+        return 0;
+    });
+
+    rows.forEach(row => table.appendChild(row));
 });
 </script>
 
