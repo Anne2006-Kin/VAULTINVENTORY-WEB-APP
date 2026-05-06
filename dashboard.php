@@ -247,6 +247,7 @@ document.getElementById("searchInput").addEventListener("keyup", function() {
 });
 
 // SORT
+
 document.getElementById("sortSelect").addEventListener("change", function() {
     let table = document.getElementById("productTable");
     let rows = Array.from(table.rows).slice(1);
