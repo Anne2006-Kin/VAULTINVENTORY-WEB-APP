@@ -44,118 +44,183 @@ while($row = $catResult->fetch_assoc()){
 <!DOCTYPE html>
 <html>
 <head>
-    <title>VaultInventory Dashboard</title>
+<title>VaultInventory Dashboard</title>
 
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-    <style>
-        body {
-            font-family: Arial;
-            margin: 0;
-            background: #f4f4f4;
-        }
+<style>
+body{
+    margin:0;
+    font-family:Arial;
+    background:#f4f4f4;
+}
 
-        .header {
-            background: #2c3e50;
-            color: white;
-            padding: 15px;
-            text-align: center;
-            position: relative;
-        }
+/* SIDEBAR */
+.sidebar{
+    width:200px;
+    height:100vh;
+    background:#2c3e50;
+    position:fixed;
+    top:0;
+    left:0;
+    color:white;
+    padding-top:20px;
+}
 
-        .logout {
-            position: absolute;
-            right: 20px;
-            top: 15px;
-            background: red;
-            padding: 8px 12px;
-            color: white;
-            text-decoration: none;
-            border-radius: 5px;
-        }
+.sidebar h3{
+    text-align:center;
+}
 
-        .container {
-            width: 90%;
-            margin: auto;
-            margin-top: 20px;
-            background: white;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0px 0px 10px rgba(0,0,0,0.1);
-        }
+.sidebar a{
+    display:block;
+    color:white;
+    padding:12px;
+    text-decoration:none;
+}
 
-        .add-btn{
-            display:inline-block;
-            margin-bottom:10px;
-            padding:10px 15px;
-            background:#2ecc71;
-            color:white;
-            text-decoration:none;
-            border-radius:5px;
-            font-weight:bold;
-        }
+.sidebar a:hover{
+    background:#34495e;
+}
 
-        .add-btn:hover{
-            background:#27ae60;
-        }
+/* MAIN */
+.main{
+    margin-left:200px;
+    padding:20px;
+}
 
-        /* SEARCH + SORT */
-        .tools{
-            margin: 10px 0;
-        }
+/* HEADER */
+.header{
+    background:white;
+    padding:15px;
+    border-radius:10px;
+    margin-bottom:20px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+}
 
-        input, select{
-            padding:8px;
-            margin-right:10px;
-        }
+.logout{
+    background:red;
+    color:white;
+    padding:8px 12px;
+    border-radius:5px;
+    text-decoration:none;
+}
 
-        .btn {
-            padding: 5px 10px;
-            text-decoration: none;
-            color: white;
-            border-radius: 5px;
-            font-size: 12px;
-        }
+/* CARDS */
+.cards{
+    display:flex;
+    gap:10px;
+    margin-bottom:20px;
+}
 
-        .edit { background: #3498db; }
-        .delete { background: #e74c3c; }
+.card{
+    flex:1;
+    background:white;
+    padding:15px;
+    border-radius:10px;
+    text-align:center;
+}
 
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 10px;
-        }
+/* BUTTON */
+.add-btn{
+    display:inline-block;
+    margin-bottom:10px;
+    padding:10px 15px;
+    background:#2ecc71;
+    color:white;
+    text-decoration:none;
+    border-radius:5px;
+}
 
-        th {
-            background: #34495e;
-            color: white;
-            padding: 10px;
-        }
+/* TABLE */
+table{
+    width:100%;
+    border-collapse:collapse;
+    background:white;
+    border-radius:10px;
+    overflow:hidden;
+}
 
-        td {
-            padding: 10px;
-            text-align: center;
-        }
+th{
+    background:#34495e;
+    color:white;
+    padding:10px;
+}
 
-        tr:nth-child(even) {
-            background: #f2f2f2;
-        }
+td{
+    padding:10px;
+    text-align:center;
+}
 
-        .chart-box{
-            margin-bottom: 30px;
-            max-width: 500px;
-        }
-    </style>
+tr:nth-child(even){
+    background:#f2f2f2;
+}
+
+/* TOOLS */
+.tools input, .tools select{
+    padding:8px;
+    margin:5px;
+}
+
+/* BUTTONS */
+.btn{
+    padding:5px 10px;
+    color:white;
+    text-decoration:none;
+    border-radius:5px;
+    font-size:12px;
+}
+
+.edit{background:#3498db;}
+.delete{background:#e74c3c;}
+
+.chart-box{
+    background:white;
+    padding:15px;
+    border-radius:10px;
+    margin-bottom:20px;
+    max-width:500px;
+}
+</style>
 </head>
 
 <body>
 
-<div class="header">
-    <h2>VaultInventory Dashboard</h2>
-    <a class="logout" href="logout.php">Logout</a>
+<!-- SIDEBAR -->
+<div class="sidebar">
+    <h3>VaultInventory</h3>
+    <a href="dashboard.php">Dashboard</a>
+    <a href="addproduct.php">Add Product</a>
+    <a href="logout.php">Logout</a>
 </div>
 
-<div class="container">
+<!-- MAIN -->
+<div class="main">
+
+    <!-- HEADER -->
+    <div class="header">
+        <h2>Warehouse & Supplier Tracker</h2>
+        <a class="logout" href="logout.php">Logout</a>
+    </div>
+
+    <!-- CARDS -->
+    <div class="cards">
+        <div class="card">
+            <h3><?= $result->num_rows ?></h3>
+            <p>Total Products</p>
+        </div>
+
+        <div class="card">
+            <h3><?= count($categories) ?></h3>
+            <p>Categories</p>
+        </div>
+
+        <div class="card">
+            <h3>Active</h3>
+            <p>Status</p>
+        </div>
+    </div>
 
     <!-- ADD BUTTON -->
     <a href="addproduct.php" class="add-btn">+ Add Product</a>
@@ -180,6 +245,7 @@ while($row = $catResult->fetch_assoc()){
 
     <!-- TABLE -->
     <table id="productTable">
+
         <tr>
             <th>Product</th>
             <th>Category</th>
@@ -203,11 +269,12 @@ while($row = $catResult->fetch_assoc()){
             </td>
         </tr>
         <?php } ?>
+
     </table>
 
 </div>
 
-<!-- CHART SCRIPT -->
+<!-- CHART -->
 <script>
 const ctx = document.getElementById('myChart');
 
@@ -216,38 +283,29 @@ new Chart(ctx, {
     data: {
         labels: <?= json_encode($categories) ?>,
         datasets: [{
-            label: 'Number of Products',
+            label: 'Products per Category',
             data: <?= json_encode($totals) ?>,
             backgroundColor: '#3498db'
         }]
-    },
-    options: {
-        responsive: true,
-        scales: {
-            y: {
-                beginAtZero: true
-            }
-        }
     }
 });
 </script>
 
-<!-- SEARCH + SORT SCRIPT -->
+<!-- SEARCH -->
 <script>
-// SEARCH
 document.getElementById("searchInput").addEventListener("keyup", function() {
     let value = this.value.toLowerCase();
     let rows = document.querySelectorAll("#productTable tr");
 
     rows.forEach((row, index) => {
         if(index === 0) return;
-
         row.style.display = row.innerText.toLowerCase().includes(value) ? "" : "none";
     });
 });
+</script>
 
-// SORT
-
+<!-- SORT -->
+<script>
 document.getElementById("sortSelect").addEventListener("change", function() {
     let table = document.getElementById("productTable");
     let rows = Array.from(table.rows).slice(1);
@@ -263,15 +321,11 @@ document.getElementById("sortSelect").addEventListener("change", function() {
         }
 
         if(value === "price"){
-            A = parseFloat(a.cells[4].innerText);
-            B = parseFloat(b.cells[4].innerText);
-            return A - B;
+            return parseFloat(a.cells[4].innerText) - parseFloat(b.cells[4].innerText);
         }
 
         if(value === "qty"){
-            A = parseInt(a.cells[3].innerText);
-            B = parseInt(b.cells[3].innerText);
-            return A - B;
+            return parseInt(a.cells[3].innerText) - parseInt(b.cells[3].innerText);
         }
 
         return 0;
