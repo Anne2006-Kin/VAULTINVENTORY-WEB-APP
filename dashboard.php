@@ -201,7 +201,7 @@ tr:nth-child(even){
     <!-- HEADER -->
     <div class="header">
         <h2>Warehouse & Supplier Tracker</h2>
-        <a class="logout" href="logout.php">Logout</a>
+        
     </div>
 
     <!-- CARDS -->
