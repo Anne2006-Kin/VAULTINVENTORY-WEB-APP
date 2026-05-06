@@ -14,11 +14,6 @@ INNER JOIN categories c ON p.category_id = c.id
 INNER JOIN suppliers s ON p.supplier_id = s.id
 ";
 
-// LEFT JOIN shows all products even if supplier is missing
-SELECT p.product_name, s.supplier_name
-FROM products p
-LEFT JOIN suppliers s ON p.supplier_id = s.id;
-
 $result = $conn->query($query);
 ?>
 
