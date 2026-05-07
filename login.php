@@ -1,5 +1,4 @@
 <?php
-
 session_start();
 include("db.php");
 
@@ -7,10 +6,11 @@ if(isset($_POST['login'])){
     $username = $_POST['username'];
     $password = $_POST['password'];
 
-   $stmt = $conn->prepare("SELECT * FROM users WHERE username=?");
-$stmt->bind_param("s", $username);
-$stmt->execute();
-$result = $stmt->get_result();
+    $stmt = $conn->prepare("SELECT * FROM users WHERE username=?");
+    $stmt->bind_param("s", $username);
+    $stmt->execute();
+    $result = $stmt->get_result();
+
     if($result->num_rows > 0){
         $row = $result->fetch_assoc();
 
@@ -30,31 +30,45 @@ $result = $stmt->get_result();
 <!DOCTYPE html>
 <html>
 <head>
-<title>Login</title>
+<title>VaultInventory Login</title>
 
 <style>
 body{
     font-family: Arial;
-    background: linear-gradient(120deg, #1f1c2c, #928dab);
+
+    /* ✅ BACKGROUND IMAGE WITH DARK OVERLAY */
+    background-image: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)),
+                      url("Warehouse.jpg");
+
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+
     height: 100vh;
     display:flex;
     justify-content:center;
     align-items:center;
+    margin: 0;
 }
 
+/* LOGIN BOX */
 .box{
     width:320px;
-    background:white;
+    background: rgba(255,255,255,0.95);
     padding:25px;
-    border-radius:10px;
-    box-shadow:0px 0px 15px rgba(0,0,0,0.3);
+    border-radius:12px;
+    box-shadow:0px 10px 25px rgba(0,0,0,0.4);
+    backdrop-filter: blur(5px);
 }
 
+/* TITLE */
 h2{
     text-align:center;
     margin-bottom:20px;
+    color:#333;
 }
 
+/* INPUTS */
 input{
     width:100%;
     padding:10px;
@@ -63,6 +77,7 @@ input{
     border-radius:5px;
 }
 
+/* LOGIN BUTTON */
 button{
     width:100%;
     padding:10px;
@@ -78,6 +93,7 @@ button:hover{
     background:#219150;
 }
 
+/* REGISTER BUTTON */
 .register-btn{
     width:100%;
     padding:10px;
@@ -94,10 +110,12 @@ button:hover{
     background:#2d86c3;
 }
 
+/* TEXT */
 p{
     text-align:center;
     margin-top:10px;
     font-size:13px;
+    color:#333;
 }
 </style>
 </head>
