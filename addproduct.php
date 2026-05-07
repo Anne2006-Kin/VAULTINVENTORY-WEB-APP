@@ -36,7 +36,9 @@ if(isset($_POST['add'])){
 <style>
 body{
     font-family: Arial;
-    background:#f4f4f4;
+    /* BACKGROUND IMAGE WITH DARK OVERLAY */
+    background-image: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)),
+                      url("Warehouse.jpg");
 }
 
 .box{
@@ -90,7 +92,7 @@ a{
 
 <form method="POST">
 
-<input type="text" name="product_name" placeholder="Product Name" >
+<input type="text" name="product_name" placeholder="Product Name" git>
 
 <select name="category_id" required>
 <?php

@@ -36,7 +36,7 @@ if(isset($_POST['login'])){
 body{
     font-family: Arial;
 
-    /* ✅ BACKGROUND IMAGE WITH DARK OVERLAY */
+    /*  BACKGROUND IMAGE WITH DARK OVERLAY */
     background-image: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)),
                       url("Warehouse.jpg");
 

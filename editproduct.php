@@ -28,9 +28,15 @@ if(isset($_POST['update'])){
 <title>Edit Product</title>
 
 <style>
+
+    
 body{
     font-family: Arial;
-    background:#f4f4f4;
+
+       /* BACKGROUND IMAGE WITH DARK OVERLAY */
+    background-image: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)),
+                      url("Warehouse.jpg");
+
 }
 
 .box{
