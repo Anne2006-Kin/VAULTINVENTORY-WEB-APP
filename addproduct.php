@@ -90,7 +90,7 @@ a{
 
 <form method="POST">
 
-<input type="text" name="product_name" placeholder="Product Name" required>
+<input type="text" name="product_name" placeholder="Product Name" >
 
 <select name="category_id" required>
 <?php
