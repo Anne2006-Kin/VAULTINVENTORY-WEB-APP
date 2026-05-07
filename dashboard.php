@@ -32,6 +32,15 @@ GROUP BY c.category_name
 
 $catResult = $conn->query($catQuery);
 
+$leftQuery = "
+SELECT suppliers.supplier_name, products.product_name
+FROM suppliers
+LEFT JOIN products
+ON suppliers.id = products.supplier_id
+";
+
+$leftResult = $conn->query($leftQuery);
+
 $categories = [];
 $totals = [];
 
