@@ -3,6 +3,7 @@ session_start();
 include("db.php");
 
 if(isset($_POST['login'])){
+
     $username = $_POST['username'];
     $password = $_POST['password'];
 
@@ -17,130 +18,12 @@ if(isset($_POST['login'])){
         if(password_verify($password, $row['password'])){
             $_SESSION['user'] = $username;
             header("Location: dashboard.php");
-            exit();
         } else {
-            echo "<script>alert('Wrong password');</script>";
+            echo "Wrong password";
         }
     } else {
-        echo "<script>alert('User not found');</script>";
+        echo "User not found";
     }
 }
+
 ?>
-
-<!DOCTYPE html>
-<html>
-<head>
-<title>VaultInventory Login</title>
-
-<style>
-body{
-    font-family: Arial;
-
-    /*  BACKGROUND IMAGE WITH DARK OVERLAY */
-    background-image: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)),
-                      url("Warehouse.jpg");
-
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
-
-    height: 100vh;
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    margin: 0;
-}
-
-/* LOGIN BOX */
-.box{
-    width:320px;
-    background: rgba(255,255,255,0.95);
-    padding:25px;
-    border-radius:12px;
-    box-shadow:0px 10px 25px rgba(0,0,0,0.4);
-    backdrop-filter: blur(5px);
-}
-
-/* TITLE */
-h2{
-    text-align:center;
-    margin-bottom:20px;
-    color:#333;
-}
-
-/* INPUTS */
-input{
-    width:100%;
-    padding:10px;
-    margin:8px 0;
-    border:1px solid #ccc;
-    border-radius:5px;
-}
-
-/* LOGIN BUTTON */
-button{
-    width:100%;
-    padding:10px;
-    background:#27ae60;
-    color:white;
-    border:none;
-    border-radius:5px;
-    font-weight:bold;
-    cursor:pointer;
-}
-
-button:hover{
-    background:#219150;
-}
-
-/* REGISTER BUTTON */
-.register-btn{
-    width:100%;
-    padding:10px;
-    background:#3498db;
-    border:none;
-    color:white;
-    font-weight:bold;
-    border-radius:5px;
-    cursor:pointer;
-    margin-top:10px;
-}
-
-.register-btn:hover{
-    background:#2d86c3;
-}
-
-/* TEXT */
-p{
-    text-align:center;
-    margin-top:10px;
-    font-size:13px;
-    color:#333;
-}
-</style>
-</head>
-
-<body>
-
-<div class="box">
-    <h2>VaultInventory Login</h2>
-
-    <form method="POST">
-        <input type="text" name="username" placeholder="Username" required>
-        <input type="password" name="password" placeholder="Password" required>
-
-        <button name="login">Login</button>
-    </form>
-
-    <!-- REGISTER BUTTON -->
-    <a href="register.php">
-        <button type="button" class="register-btn">
-            Create Account
-        </button>
-    </a>
-
-    <p>Don't have an account? Click Create Account</p>
-</div>
-
-</body>
-</html>
