@@ -1,0 +1,39 @@
+body{
+    font-family: Arial;
+    background-image: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)),
+                      url("Warehouse.jpg");
+    background-size: cover;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    height:100vh;
+    margin:0;
+}
+
+.box{
+    width:320px;
+    background:white;
+    padding:25px;
+    border-radius:10px;
+    text-align:center;
+}
+
+input{
+    width:100%;
+    padding:10px;
+    margin:8px 0;
+}
+
+button{
+    width:100%;
+    padding:10px;
+    background:#27ae60;
+    color:white;
+    border:none;
+    cursor:pointer;
+}
+
+a{
+    display:block;
+    margin-top:10px;
+}
