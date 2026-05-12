@@ -1,0 +1,916 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>WMS Industrial - Warehouse Management</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #f5f7fa;
+        }
+
+        .modal {
+            animation: slideIn 0.2s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .toast {
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateX(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+            transition: all 0.2s ease;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Sidebar -->
+    <aside class="fixed left-0 top-0 h-screen w-64 bg-white border-r z-50 hidden md:flex flex-col">
+        <div class="p-6 border-b">
+            <div class="flex items-center gap-2">
+                <span class="material-symbols-outlined text-2xl text-blue-600">precision_manufacturing</span>
+                <h1 class="text-xl font-bold text-blue-600">WMS Industrial</h1>
+            </div>
+            <div class="mt-4 p-2 bg-gray-50 rounded-lg flex items-center gap-2">
+                <div class="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white text-sm"
+                    id="userInitial">K</div>
+                <div>
+                    <p class="text-xs font-bold" id="sidebarUserName">Kristia Lapuz</p>
+                    <p class="text-xs text-gray-500" id="userRole">Staff</p>
+                </div>
+            </div>
+        </div>
+
+        <nav class="flex-1 p-4 space-y-1">
+            <a href="#" data-page="dashboard"
+                class="nav-link flex items-center gap-3 px-3 py-2 rounded-lg bg-blue-600 text-white">
+                <span class="material-symbols-outlined text-sm">dashboard</span> Dashboard
+            </a>
+            <a href="#" data-page="inventory"
+                class="nav-link flex items-center gap-3 px-3 py-2 rounded-lg text-gray-600 hover:bg-gray-100">
+                <span class="material-symbols-outlined text-sm">inventory_2</span> Inventory
+            </a>
+            <a href="#" data-page="suppliers"
+                class="nav-link flex items-center gap-3 px-3 py-2 rounded-lg text-gray-600 hover:bg-gray-100">
+                <span class="material-symbols-outlined text-sm">local_shipping</span> Suppliers
+            </a>
+            <a href="#" data-page="staff"
+                class="nav-link flex items-center gap-3 px-3 py-2 rounded-lg text-gray-600 hover:bg-gray-100">
+                <span class="material-symbols-outlined text-sm">group</span> Staff Management
+            </a>
+            <a href="#" data-page="reports"
+                class="nav-link flex items-center gap-3 px-3 py-2 rounded-lg text-gray-600 hover:bg-gray-100">
+                <span class="material-symbols-outlined text-sm">analytics</span> Reports
+            </a>
+        </nav>
+
+        <div class="p-4 border-t">
+            <a id="logoutBtn"
+                class="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-600 hover:text-red-500 cursor-pointer">
+                <span class="material-symbols-outlined text-sm">logout</span> Logout
+            </a>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="md:ml-64 min-h-screen">
+        <header class="bg-white border-b sticky top-0 z-40 px-6 py-3 flex justify-between items-center flex-wrap gap-3">
+            <div class="relative w-full md:w-80">
+                <span
+                    class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">search</span>
+                <input id="globalSearch" type="text" placeholder="Search products, suppliers, staff..."
+                    class="w-full pl-10 pr-3 py-2 border rounded-lg text-sm">
+            </div>
+            <div class="flex items-center gap-3">
+                <button onclick="openProfileModal()"
+                    class="flex items-center gap-3 hover:bg-gray-100 px-3 py-2 rounded-lg transition-colors">
+                    <div class="w-9 h-9 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold text-sm"
+                        id="headerAvatar">K</div>
+                    <div class="text-left hidden sm:block">
+                        <p class="font-semibold text-sm" id="headerUserName">Kristia Lapuz</p>
+                        <p class="text-xs text-gray-500" id="headerUserRole">Staff</p>
+                    </div>
+                </button>
+            </div>
+        </header>
+
+        <div id="pageContent" class="p-6"></div>
+    </main>
+
+    <!-- Mobile Nav -->
+    <nav class="md:hidden fixed bottom-0 left-0 w-full bg-white border-t flex justify-around py-2 z-50">
+        <a href="#" data-page="dashboard" class="mobile-nav-link flex flex-col items-center text-xs text-blue-600"><span
+                class="material-symbols-outlined text-sm">dashboard</span><span>Home</span></a>
+        <a href="#" data-page="inventory" class="mobile-nav-link flex flex-col items-center text-xs text-gray-500"><span
+                class="material-symbols-outlined text-sm">inventory_2</span><span>Stock</span></a>
+        <a href="#" data-page="suppliers" class="mobile-nav-link flex flex-col items-center text-xs text-gray-500"><span
+                class="material-symbols-outlined text-sm">local_shipping</span><span>Supply</span></a>
+        <a href="#" data-page="staff" class="mobile-nav-link flex flex-col items-center text-xs text-gray-500"><span
+                class="material-symbols-outlined text-sm">group</span><span>Staff</span></a>
+        <a href="#" data-page="reports" class="mobile-nav-link flex flex-col items-center text-xs text-gray-500"><span
+                class="material-symbols-outlined text-sm">analytics</span><span>Reports</span></a>
+    </nav>
+
+    <!-- Product Modal -->
+    <div id="productModal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 hidden"
+        onclick="if(event.target===this) closeProductModal()">
+        <div class="bg-white rounded-xl w-full max-w-lg mx-4 p-6 modal max-h-[90vh] overflow-y-auto">
+            <h3 id="productModalTitle" class="text-xl font-bold mb-4">Add Product</h3>
+            <form id="productForm">
+                <input type="hidden" id="editProductId">
+                <div class="mb-3"><label class="text-xs font-bold block mb-1">Product Name *</label><input id="prodName"
+                        required class="w-full border rounded-lg p-2"></div>
+                <div class="mb-3"><label class="text-xs font-bold block mb-1">SKU *</label><input id="prodSku" required
+                        class="w-full border rounded-lg p-2"></div>
+                <div class="mb-3"><label class="text-xs font-bold block mb-1">Category</label><input id="prodCategory"
+                        class="w-full border rounded-lg p-2"></div>
+                <div class="mb-3"><label class="text-xs font-bold block mb-1">Supplier</label><select
+                        id="prodSupplierId" class="w-full border rounded-lg p-2">
+                        <option value="">Select Supplier</option>
+                    </select></div>
+                <div class="mb-3"><label class="text-xs font-bold block mb-1">Handled By (Staff)</label><select
+                        id="prodHandledBy" class="w-full border rounded-lg p-2">
+                        <option value="">Select Staff</option>
+                    </select></div>
+                <div class="grid grid-cols-2 gap-3 mb-3">
+                    <div><label class="text-xs font-bold block mb-1">Quantity</label><input type="number"
+                            id="prodQuantity" class="w-full border rounded-lg p-2"></div>
+                    <div><label class="text-xs font-bold block mb-1">Unit Price (₱)</label><input type="number"
+                            step="0.01" id="prodPrice" class="w-full border rounded-lg p-2"></div>
+                </div>
+                <div class="grid grid-cols-2 gap-3 mb-3">
+                    <div><label class="text-xs font-bold block mb-1">Reorder Level</label><input type="number"
+                            id="prodReorder" class="w-full border rounded-lg p-2"></div>
+                    <div><label class="text-xs font-bold block mb-1">Location</label><input id="prodLocation"
+                            class="w-full border rounded-lg p-2" placeholder="Aisle-Shelf"></div>
+                </div>
+                <div class="flex justify-end gap-3 mt-4"><button type="button" onclick="closeProductModal()"
+                        class="px-4 py-2 border rounded-lg">Cancel</button><button type="submit"
+                        class="px-4 py-2 bg-blue-600 text-white rounded-lg">Save Product</button></div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Stock Movement Modal -->
+    <div id="stockMovementModal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 hidden"
+        onclick="if(event.target===this) closeStockMovementModal()">
+        <div class="bg-white rounded-xl w-full max-w-md mx-4 p-6 modal">
+            <h3 class="text-xl font-bold mb-4">Stock Movement</h3>
+            <form id="stockMovementForm">
+                <input type="hidden" id="movementProductId">
+                <div class="mb-3"><label class="text-xs font-bold block mb-1">Product</label><input type="text"
+                        id="movementProductName" readonly class="w-full bg-gray-100 border rounded-lg p-2"></div>
+                <div class="mb-3"><label class="text-xs font-bold block mb-1">Current Stock</label><input type="text"
+                        id="movementCurrentStock" readonly class="w-full bg-gray-100 border rounded-lg p-2"></div>
+                <div class="mb-3"><label class="text-xs font-bold block mb-1">Movement Type *</label><select
+                        id="movementType" required class="w-full border rounded-lg p-2">
+                        <option value="OUT">Sold / Taken Out (-)</option>
+                        <option value="IN">Received / Added In (+)</option>
+                    </select></div>
+                <div class="mb-3"><label class="text-xs font-bold block mb-1">Quantity *</label><input type="number"
+                        id="movementQuantity" required class="w-full border rounded-lg p-2"></div>
+                <div class="mb-3"><label class="text-xs font-bold block mb-1">Handled By (Staff)</label><select
+                        id="movementHandledBy" class="w-full border rounded-lg p-2">
+                        <option value="">Select Staff</option>
+                    </select></div>
+                <div class="mb-3"><label class="text-xs font-bold block mb-1">Reason / Reference</label><input
+                        id="movementReason" class="w-full border rounded-lg p-2"
+                        placeholder="e.g., Customer order, Restock"></div>
+                <div class="flex justify-end gap-3 mt-4"><button type="button" onclick="closeStockMovementModal()"
+                        class="px-4 py-2 border rounded-lg">Cancel</button><button type="submit"
+                        class="px-4 py-2 bg-blue-600 text-white rounded-lg">Process Movement</button></div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Supplier Modal -->
+    <div id="supplierModal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 hidden"
+        onclick="if(event.target===this) closeSupplierModal()">
+        <div class="bg-white rounded-xl w-full max-w-lg mx-4 p-6 modal max-h-[90vh] overflow-y-auto">
+            <h3 id="supplierModalTitle" class="text-xl font-bold mb-4">Add Supplier</h3>
+            <form id="supplierForm">
+                <input type="hidden" id="editSupplierId">
+                <div class="mb-3"><label class="text-xs font-bold block mb-1">Company Name *</label><input id="supName"
+                        required class="w-full border rounded-lg p-2"></div>
+                <div class="mb-3"><label class="text-xs font-bold block mb-1">Contact Person</label><input
+                        id="supContact" class="w-full border rounded-lg p-2"></div>
+                <div class="mb-3"><label class="text-xs font-bold block mb-1">Email</label><input id="supEmail"
+                        class="w-full border rounded-lg p-2"></div>
+                <div class="mb-3"><label class="text-xs font-bold block mb-1">Phone</label><input id="supPhone"
+                        class="w-full border rounded-lg p-2"></div>
+                <div class="mb-3"><label class="text-xs font-bold block mb-1">Category</label><input id="supCategory"
+                        class="w-full border rounded-lg p-2"></div>
+                <div class="mb-3"><label class="text-xs font-bold block mb-1">Location</label><input id="supLocation"
+                        class="w-full border rounded-lg p-2" placeholder="City, Country"></div>
+                <div class="mb-3"><label class="text-xs font-bold block mb-1">Handled By (Staff)</label><select
+                        id="supHandledBy" class="w-full border rounded-lg p-2">
+                        <option value="">Select Staff</option>
+                    </select></div>
+                <div class="flex justify-end gap-3 mt-4"><button type="button" onclick="closeSupplierModal()"
+                        class="px-4 py-2 border rounded-lg">Cancel</button><button type="submit"
+                        class="px-4 py-2 bg-blue-600 text-white rounded-lg">Save Supplier</button></div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Profile Modal -->
+    <div id="profileModal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 hidden"
+        onclick="if(event.target===this) closeProfileModal()">
+        <div class="bg-white rounded-xl w-full max-w-md mx-4 p-6 modal">
+            <h3 class="text-xl font-bold mb-4">Edit Account</h3>
+            <form id="profileForm">
+                <div class="mb-3"><label class="text-xs font-bold block mb-1">Full Name</label><input type="text"
+                        id="profileFullName" class="w-full border rounded-lg p-2"></div>
+                <div class="mb-3"><label class="text-xs font-bold block mb-1">Email</label><input type="email"
+                        id="profileEmail" class="w-full border rounded-lg p-2"></div>
+                <div class="mb-3"><label class="text-xs font-bold block mb-1">Username</label><input type="text"
+                        id="profileUsername" class="w-full border rounded-lg p-2 bg-gray-100" readonly></div>
+                <div class="mb-3"><label class="text-xs font-bold block mb-1">New Password</label><input type="password"
+                        id="profilePassword" class="w-full border rounded-lg p-2"
+                        placeholder="Leave blank to keep current"></div>
+                <div class="mb-3"><label class="text-xs font-bold block mb-1">Confirm Password</label><input
+                        type="password" id="profileConfirmPassword" class="w-full border rounded-lg p-2"></div>
+                <div class="flex justify-end gap-3 mt-4"><button type="button" onclick="closeProfileModal()"
+                        class="px-4 py-2 border rounded-lg">Cancel</button><button type="submit"
+                        class="px-4 py-2 bg-blue-600 text-white rounded-lg">Save Changes</button></div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Staff View Modal -->
+    <div id="staffViewModal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 hidden"
+        onclick="if(event.target===this) closeStaffViewModal()">
+        <div class="bg-white rounded-xl w-full max-w-md mx-4 p-6 modal">
+            <h3 class="text-xl font-bold mb-4">Staff Details</h3>
+            <div class="space-y-3">
+                <div><label class="text-xs font-bold block text-gray-500">User ID</label>
+                    <p id="viewUserId" class="text-lg font-mono"></p>
+                </div>
+                <div><label class="text-xs font-bold block text-gray-500">Full Name</label>
+                    <p id="viewUserFullName" class="text-lg"></p>
+                </div>
+                <div><label class="text-xs font-bold block text-gray-500">Username</label>
+                    <p id="viewUserUsername" class="text-lg"></p>
+                </div>
+                <div><label class="text-xs font-bold block text-gray-500">Email</label>
+                    <p id="viewUserEmail" class="text-lg"></p>
+                </div>
+                <div><label class="text-xs font-bold block text-gray-500">Role</label>
+                    <p id="viewUserRole" class="text-lg"></p>
+                </div>
+                <div><label class="text-xs font-bold block text-gray-500">Date Registered</label>
+                    <p id="viewUserDate" class="text-lg"></p>
+                </div>
+            </div>
+            <div class="flex justify-end mt-6"><button onclick="closeStaffViewModal()"
+                    class="px-4 py-2 bg-blue-600 text-white rounded-lg">Close</button></div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8080/api';
+        let allProducts = [], allSuppliers = [], allUsers = [], currentPage = 'dashboard', currentUser = null;
+
+        function showToast(msg, type) {
+            const toast = document.createElement('div');
+            toast.className = `fixed bottom-6 right-6 z-50 px-4 py-2 rounded-lg shadow-lg text-white text-sm toast ${type === 'error' ? 'bg-red-600' : 'bg-green-600'}`;
+            toast.innerHTML = msg;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+
+        async function apiCall(url, options = {}) {
+            const token = localStorage.getItem('authToken');
+            try {
+                const res = await fetch(url, {
+                    ...options,
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`,
+                        ...options.headers
+                    }
+                });
+                return await res.json();
+            } catch (e) {
+                return { success: false, error: e.message };
+            }
+        }
+
+        async function fetchProducts() { const data = await apiCall(`${API_BASE}/products`); if (data.success) allProducts = data.products; return allProducts; }
+        async function fetchSuppliers() { const data = await apiCall(`${API_BASE}/suppliers`); if (data.success) allSuppliers = data.suppliers; return allSuppliers; }
+        async function fetchUsers() { const data = await apiCall(`${API_BASE}/users`); if (data.success) allUsers = data.users; return allUsers; }
+        async function fetchDashboardStats() { return await apiCall(`${API_BASE}/dashboard/stats`); }
+        async function fetchUserProfile() { const data = await apiCall(`${API_BASE}/auth/profile`); if (data.success) { currentUser = data.user; const name = currentUser.full_name || currentUser.username || 'Kristia Lapuz'; document.getElementById('headerUserName').innerText = name; document.getElementById('headerUserRole').innerText = currentUser.role || 'Staff'; document.getElementById('headerAvatar').innerText = name.charAt(0).toUpperCase(); document.getElementById('sidebarUserName').innerText = name; document.getElementById('userInitial').innerText = name.charAt(0).toUpperCase(); document.getElementById('userRole').innerText = currentUser.role || 'Staff'; } return currentUser; }
+        async function updateUserProfile(data) { return await apiCall(`${API_BASE}/auth/profile`, { method: 'PUT', body: JSON.stringify(data) }); }
+        async function saveProduct(product, id = null) { const url = id ? `${API_BASE}/products/${id}` : `${API_BASE}/products`; return await apiCall(url, { method: id ? 'PUT' : 'POST', body: JSON.stringify(product) }); }
+        async function deleteProduct(id) { return await apiCall(`${API_BASE}/products/${id}`, { method: 'DELETE' }); }
+        async function stockMovement(productId, quantity, movement_type, reason, handled_by) { return await apiCall(`${API_BASE}/products/${productId}/stock-movement`, { method: 'POST', body: JSON.stringify({ quantity, movement_type, reason, handled_by }) }); }
+        async function saveSupplier(supplier, id = null) { const url = id ? `${API_BASE}/suppliers/${id}` : `${API_BASE}/suppliers`; return await apiCall(url, { method: id ? 'PUT' : 'POST', body: JSON.stringify(supplier) }); }
+        async function deleteSupplier(id) { return await apiCall(`${API_BASE}/suppliers/${id}`, { method: 'DELETE' }); }
+
+        function exportToCSV(data, filename, columns) {
+            let csv = columns.join(',') + '\n';
+            data.forEach(row => {
+                const rowData = columns.map(col => {
+                    let val = row[col] || '';
+                    if (typeof val === 'string' && val.includes(',')) val = `"${val}"`;
+                    return val;
+                });
+                csv += rowData.join(',') + '\n';
+            });
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = `${filename}_${new Date().toISOString().slice(0, 10)}.csv`;
+            a.click();
+            URL.revokeObjectURL(a.href);
+            showToast(`${filename} exported!`, 'success');
+        }
+        function exportProductsToCSV() { exportToCSV(allProducts, 'inventory_export', ['product_name', 'sku', 'category', 'quantity', 'unit_price', 'reorder_level', 'location', 'supplier_name', 'handled_by_name']); }
+        function exportSuppliersToCSV() { exportToCSV(allSuppliers, 'suppliers_export', ['supplier_name', 'contact_person', 'email', 'phone', 'category', 'location', 'handled_by_name']); }
+        function exportUsersToCSV() { exportToCSV(allUsers, 'staff_export', ['user_id', 'full_name', 'username', 'email', 'role', 'created_at']); }
+        function printPage() { window.print(); }
+
+        // Dashboard
+        async function renderDashboard() {
+            const statsData = await fetchDashboardStats();
+            await fetchProducts(); await fetchSuppliers(); await fetchUsers();
+            const metrics = statsData.data?.metrics || { totalProducts: allProducts.length, lowStockItems: 0, criticalStock: 0, totalSuppliers: allSuppliers.length, totalValue: 0 };
+            const recentActivities = statsData.data?.recentActivities || [];
+
+            const html = `
+        <div>
+            <h2 class="text-2xl font-bold mb-2">Operational Overview</h2>
+            <p class="text-gray-500 mb-6">Real-time Inventory Insights - ${new Date().toLocaleString()}</p>
+            <div class="grid grid-cols-1 md:grid-cols-5 gap-5 mb-6">
+                <div class="bg-white p-5 rounded-xl shadow-sm border stat-card"><div class="flex justify-between items-start"><div><p class="text-sm text-gray-500">Total Products</p><p class="text-3xl font-bold mt-1">${metrics.totalProducts}</p></div><span class="material-symbols-outlined text-blue-500 text-2xl">inventory</span></div><p class="text-sm text-gray-500 mt-2">Total SKUs in system</p></div>
+                <div class="bg-white p-5 rounded-xl shadow-sm border stat-card"><div class="flex justify-between items-start"><div><p class="text-sm text-gray-500">Low Stock Alerts</p><p class="text-3xl font-bold text-yellow-600 mt-1">${metrics.lowStockItems || 0}</p></div><span class="material-symbols-outlined text-yellow-500 text-2xl">warning</span></div><p class="text-sm text-gray-500 mt-2">Below reorder level</p></div>
+                <div class="bg-white p-5 rounded-xl shadow-sm border stat-card"><div class="flex justify-between items-start"><div><p class="text-sm text-gray-500">Critical Stock</p><p class="text-3xl font-bold text-red-600 mt-1">${metrics.criticalStock || 0}</p></div><span class="material-symbols-outlined text-red-500 text-2xl">error</span></div><p class="text-sm text-gray-500 mt-2">Out of stock items</p></div>
+                <div class="bg-white p-5 rounded-xl shadow-sm border stat-card"><div class="flex justify-between items-start"><div><p class="text-sm text-gray-500">Active Suppliers</p><p class="text-3xl font-bold mt-1">${metrics.totalSuppliers}</p></div><span class="material-symbols-outlined text-blue-500 text-2xl">local_shipping</span></div><p class="text-sm text-gray-500 mt-2">Partner companies</p></div>
+                <div class="bg-white p-5 rounded-xl shadow-sm border stat-card"><div class="flex justify-between items-start"><div><p class="text-sm text-gray-500">Staff Members</p><p class="text-3xl font-bold mt-1">${allUsers.length}</p></div><span class="material-symbols-outlined text-purple-500 text-2xl">group</span></div><p class="text-sm text-gray-500 mt-2">Registered users</p></div>
+            </div>
+            <div class="bg-white rounded-xl shadow-sm border p-5">
+                <h3 class="font-bold mb-4">Recent Activities</h3>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm">
+                        <thead class="border-b">
+                            <tr><th class="text-left p-3">Type</th><th class="text-left p-3">Item</th><th class="text-left p-3">Action</th><th class="text-left p-3">Handled By</th><th class="text-left p-3">Date</th></tr>
+                        </thead>
+                        <tbody>
+                            ${recentActivities.map(act => `
+                            <tr>
+                                <td class="p-3"><span class="px-2 py-1 rounded-full text-xs ${act.type === 'ADD' ? 'bg-green-100 text-green-700' : (act.type === 'DELETE' ? 'bg-red-100 text-red-700' : (act.type === 'UPDATE' ? 'bg-yellow-100 text-yellow-700' : 'bg-blue-100 text-blue-700'))}">${act.type || 'ACTIVITY'}</span></td>
+                                <td class="p-3 font-medium">${act.name}</td>
+                                <td class="p-3">${act.action || act.details}</td>
+                                <td class="p-3 text-gray-500">${act.handled_by || 'System'}</td>
+                                <td class="p-3 text-gray-500">${new Date(act.date).toLocaleString()}</td>
+                            </tr>
+                            `).join('')}
+                            ${recentActivities.length === 0 ? '<tr><td colspan="5" class="text-center p-8 text-gray-500">No activities yet. Add products or process stock movements.</td></tr>' : ''}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>`;
+            document.getElementById('pageContent').innerHTML = html;
+        }
+
+        // Inventory
+        async function renderInventory() {
+            await fetchProducts(); await fetchSuppliers();
+            const supplierMap = new Map(allSuppliers.map(s => [s.supplier_id, s.supplier_name]));
+            const totalValue = allProducts.reduce((s, p) => s + (p.quantity * (p.unit_price || 0)), 0);
+
+            const html = `
+        <div>
+            <div class="flex justify-between items-center mb-6 flex-wrap gap-3">
+                <h2 class="text-2xl font-bold">Inventory Management</h2>
+                <button onclick="openProductModal()" class="px-4 py-2 bg-blue-600 text-white rounded-lg flex items-center gap-2"><span class="material-symbols-outlined text-sm">add</span>Add Product</button>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                <div class="bg-white p-4 rounded-xl shadow-sm border"><div class="text-sm text-gray-500">Total SKUs</div><div class="text-2xl font-bold mt-1">${allProducts.length}</div></div>
+                <div class="bg-white p-4 rounded-xl shadow-sm border"><div class="text-sm text-gray-500">Critical Stock</div><div class="text-2xl font-bold text-red-600 mt-1">${allProducts.filter(p => p.quantity === 0).length}</div></div>
+                <div class="bg-white p-4 rounded-xl shadow-sm border"><div class="text-sm text-gray-500">Low Stock</div><div class="text-2xl font-bold text-yellow-600 mt-1">${allProducts.filter(p => p.quantity > 0 && p.quantity <= (p.reorder_level || 10)).length}</div></div>
+                <div class="bg-white p-4 rounded-xl shadow-sm border"><div class="text-sm text-gray-500">Total Value</div><div class="text-2xl font-bold text-blue-600 mt-1">₱${totalValue.toLocaleString()}</div></div>
+            </div>
+            <div class="bg-white rounded-xl shadow-sm border overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm">
+                        <thead class="bg-gray-50 border-b">
+                            <tr><th class="p-3">SKU</th><th class="p-3">Product Name</th><th class="p-3">Category</th><th class="p-3">Supplier</th><th class="p-3">Quantity</th><th class="p-3">Unit Price</th><th class="p-3">Location</th><th class="p-3">Handled By</th><th class="p-3">Date Added</th><th class="p-3">Actions</th></tr>
+                        </thead>
+                        <tbody id="inventoryTableBody">
+                            ${allProducts.map(p => `
+                            <tr>
+                                <td class="p-3 font-mono text-xs">${p.sku}</td><td class="p-3 font-medium">${p.product_name}</td><td class="p-3">${p.category || '-'}</td><td class="p-3">${supplierMap.get(p.supplier_id) || '-'}</td><td class="p-3 ${p.quantity <= (p.reorder_level || 10) ? 'text-red-500 font-bold' : ''}">${p.quantity}</td><td class="p-3">₱${p.unit_price || 0}</td><td class="p-3">${p.location || '-'}</td><td class="p-3 text-gray-500">${p.handled_by_name || p.created_by_name || 'System'}</td><td class="p-3 text-gray-500">${p.created_at ? new Date(p.created_at).toLocaleDateString() : '-'}</td><td class="p-3"><button onclick="openStockMovementModal(${p.product_id}, '${p.product_name}', ${p.quantity})" class="text-green-600 mr-2 text-xs">Sell/Receive</button><button onclick="editProduct(${p.product_id})" class="text-blue-600 mr-2 text-xs">Edit</button><button onclick="deleteProductItem(${p.product_id})" class="text-red-600 text-xs">Delete</button></td>
+                            </tr>
+                            `).join('')}
+                            ${allProducts.length === 0 ? '<tr><td colspan="10" class="text-center p-8 text-gray-500">No products yet. Click "Add Product" to get started.</td></tr>' : ''}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>`;
+            document.getElementById('pageContent').innerHTML = html;
+        }
+
+        // Suppliers
+        async function renderSuppliers() {
+            await fetchSuppliers();
+
+            const html = `
+        <div>
+            <div class="flex justify-between items-center mb-6 flex-wrap gap-3">
+                <h2 class="text-2xl font-bold">Supplier Directory</h2>
+                <button onclick="openSupplierModal()" class="px-4 py-2 bg-blue-600 text-white rounded-lg flex items-center gap-2"><span class="material-symbols-outlined text-sm">add</span>Add Supplier</button>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                <div class="bg-white p-4 rounded-xl shadow-sm border"><div class="text-sm text-gray-500">Total Suppliers</div><div class="text-2xl font-bold mt-1">${allSuppliers.length}</div></div>
+                <div class="bg-white p-4 rounded-xl shadow-sm border"><div class="text-sm text-gray-500">Active Contracts</div><div class="text-2xl font-bold text-green-600 mt-1">${allSuppliers.filter(s => s.status !== 'Inactive').length}</div></div>
+                <div class="bg-white p-4 rounded-xl shadow-sm border"><div class="text-sm text-gray-500">Total Products</div><div class="text-2xl font-bold text-blue-600 mt-1">${allSuppliers.reduce((sum, s) => sum + (s.product_count || 0), 0)}</div></div>
+                <div class="bg-white p-4 rounded-xl shadow-sm border"><div class="text-sm text-gray-500">Avg Lead Time</div><div class="text-2xl font-bold text-purple-600 mt-1">${Math.floor(Math.random() * 20) + 5} days</div></div>
+            </div>
+            <div class="bg-white rounded-xl shadow-sm border overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm">
+                        <thead class="bg-gray-50 border-b">
+                            <tr><th class="p-3">ID</th><th class="p-3">Company</th><th class="p-3">Contact</th><th class="p-3">Email</th><th class="p-3">Phone</th><th class="p-3">Category</th><th class="p-3">Location</th><th class="p-3">Handled By</th><th class="p-3">Products</th><th class="p-3">Actions</th></tr>
+                        </thead>
+                        <tbody id="supplierTableBody">
+                            ${allSuppliers.map(s => `
+                            <tr>
+                                <td class="p-3 font-mono text-xs">SUP-${s.supplier_id}</td><td class="p-3 font-medium">${s.supplier_name}</td><td class="p-3">${s.contact_person || '-'}</td><td class="p-3">${s.email || '-'}</td><td class="p-3">${s.phone || '-'}</td><td class="p-3">${s.category || '-'}</td><td class="p-3">${s.location || '-'}</td><td class="p-3 text-gray-500">${s.handled_by_name || s.created_by_name || 'System'}</td><td class="p-3">${s.product_count || 0}</td><td class="p-3"><button onclick="editSupplierItem(${s.supplier_id})" class="text-blue-600 mr-2 text-xs">Edit</button><button onclick="deleteSupplierItem(${s.supplier_id})" class="text-red-600 text-xs">Delete</button></td>
+                            </tr>
+                            `).join('')}
+                            ${allSuppliers.length === 0 ? '<tr><td colspan="10" class="text-center p-8 text-gray-500">No suppliers yet. Click "Add Supplier" to get started.</tr>' : ''}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>`;
+            document.getElementById('pageContent').innerHTML = html;
+        }
+
+        // Staff Management
+        async function renderStaff() {
+            await fetchUsers();
+            const activeStaff = allUsers.filter(u => u.is_active !== false).length;
+
+            const html = `
+        <div>
+            <div class="flex justify-between items-center mb-6 flex-wrap gap-3">
+                <h2 class="text-2xl font-bold">Staff Management</h2>
+                <button onclick="exportUsersToCSV()" class="px-4 py-2 border rounded-lg flex items-center gap-2"><span class="material-symbols-outlined text-sm">download</span>Export Staff List</button>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                <div class="bg-white p-4 rounded-xl shadow-sm border"><div class="text-sm text-gray-500">Total Staff</div><div class="text-2xl font-bold mt-1">${allUsers.length}</div></div>
+                <div class="bg-white p-4 rounded-xl shadow-sm border"><div class="text-sm text-gray-500">Active Staff</div><div class="text-2xl font-bold text-green-600 mt-1">${activeStaff}</div></div>
+            </div>
+            <div class="bg-white rounded-xl shadow-sm border overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm">
+                        <thead class="bg-gray-50 border-b">
+                            <tr><th class="p-3">User ID</th><th class="p-3">Full Name</th><th class="p-3">Username</th><th class="p-3">Date Registered</th><th class="p-3">Actions</th></tr>
+                        </thead>
+                        <tbody id="staffTableBody">
+                            ${allUsers.map(u => `
+                            <tr>
+                                <td class="p-3 font-mono text-xs">#${u.user_id}</td><td class="p-3 font-medium">${u.full_name || '-'}</td><td class="p-3">${u.username}</td><td class="p-3 text-gray-500">${u.created_at ? new Date(u.created_at).toLocaleDateString() : '-'}</td><td class="p-3"><button onclick="viewStaffDetails(${u.user_id})" class="text-blue-600 text-xs">View Details</button></td>
+                            </tr>
+                            `).join('')}
+                            ${allUsers.length === 0 ? '<tr><td colspan="5" class="text-center p-8 text-gray-500">No staff members found.</tr>' : ''}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>`;
+            document.getElementById('pageContent').innerHTML = html;
+        }
+
+        async function renderReports() {
+            await fetchProducts();
+            await fetchSuppliers();
+            await fetchUsers();
+
+            const totalValue = allProducts.reduce((s, p) => s + (p.quantity * (p.unit_price || 0)), 0);
+
+            // Get last 6 months (including current month)
+            function getLastSixMonths() {
+                const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                const currentDate = new Date();
+                const currentMonth = currentDate.getMonth();
+                const result = [];
+                for (let i = 5; i >= 0; i--) {
+                    let monthIndex = currentMonth - i;
+                    if (monthIndex < 0) continue;
+                    result.push(months[monthIndex]);
+                }
+                return result;
+            }
+
+            const months = getLastSixMonths();
+
+            // Calculate REAL product data by month
+            const productData = new Array(months.length).fill(0);
+            allProducts.forEach(product => {
+                if (product.created_at) {
+                    const date = new Date(product.created_at);
+                    const productMonth = date.toLocaleString('default', { month: 'short' });
+                    const monthIndex = months.indexOf(productMonth);
+                    if (monthIndex !== -1) {
+                        productData[monthIndex]++;
+                    }
+                }
+            });
+
+            // Calculate REAL supplier data by month
+            const supplierData = new Array(months.length).fill(0);
+            allSuppliers.forEach(supplier => {
+                if (supplier.created_at) {
+                    const date = new Date(supplier.created_at);
+                    const supplierMonth = date.toLocaleString('default', { month: 'short' });
+                    const monthIndex = months.indexOf(supplierMonth);
+                    if (monthIndex !== -1) {
+                        supplierData[monthIndex]++;
+                    }
+                }
+            });
+
+            // Calculate REAL user/staff data by month
+            const userData = new Array(months.length).fill(0);
+            allUsers.forEach(user => {
+                if (user.created_at) {
+                    const date = new Date(user.created_at);
+                    const userMonth = date.toLocaleString('default', { month: 'short' });
+                    const monthIndex = months.indexOf(userMonth);
+                    if (monthIndex !== -1) {
+                        userData[monthIndex]++;
+                    }
+                }
+            });
+
+            const html = `
+    <div>
+        <h2 class="text-2xl font-bold mb-4">Reports & Analytics</h2>
+        <div class="flex flex-wrap justify-end gap-3 mb-6">
+            <button onclick="exportProductsToCSV()" class="px-4 py-2 border rounded-lg flex items-center gap-2"><span class="material-symbols-outlined text-sm">download</span>Export Products</button>
+            <button onclick="exportSuppliersToCSV()" class="px-4 py-2 border rounded-lg flex items-center gap-2"><span class="material-symbols-outlined text-sm">download</span>Export Suppliers</button>
+            <button onclick="exportUsersToCSV()" class="px-4 py-2 border rounded-lg flex items-center gap-2"><span class="material-symbols-outlined text-sm">download</span>Export Staff</button>
+            <button onclick="printPage()" class="px-4 py-2 border rounded-lg flex items-center gap-2"><span class="material-symbols-outlined text-sm">print</span>Print Report</button>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+            <div class="bg-white p-5 rounded-xl shadow-sm border"><div class="text-sm text-gray-500">Total Inventory Value</div><div class="text-2xl font-bold text-blue-600 mt-1">₱${totalValue.toLocaleString()}</div><div class="text-xs text-gray-500 mt-1">From ${allProducts.length} products</div></div>
+            <div class="bg-white p-5 rounded-xl shadow-sm border"><div class="text-sm text-gray-500">Total Products</div><div class="text-2xl font-bold mt-1">${allProducts.length}</div><div class="text-xs text-gray-500 mt-1">Added over time</div></div>
+            <div class="bg-white p-5 rounded-xl shadow-sm border"><div class="text-sm text-gray-500">Total Suppliers</div><div class="text-2xl font-bold mt-1">${allSuppliers.length}</div><div class="text-xs text-gray-500 mt-1">Active partners</div></div>
+        </div>
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+            <div class="bg-white p-5 rounded-xl shadow-sm border">
+                <h3 class="font-bold mb-4">Products Added (Monthly)</h3>
+                <canvas id="productsChart" height="200"></canvas>
+                <p class="text-center text-sm text-gray-500 mt-3">Total: ${allProducts.length} products</p>
+            </div>
+            <div class="bg-white p-5 rounded-xl shadow-sm border">
+                <h3 class="font-bold mb-4">Suppliers Added (Monthly)</h3>
+                <canvas id="suppliersChart" height="200"></canvas>
+                <p class="text-center text-sm text-gray-500 mt-3">Total: ${allSuppliers.length} suppliers</p>
+            </div>
+            <div class="bg-white p-5 rounded-xl shadow-sm border">
+                <h3 class="font-bold mb-4">Staff Registered (Monthly)</h3>
+                <canvas id="usersChart" height="200"></canvas>
+                <p class="text-center text-sm text-gray-500 mt-3">Total: ${allUsers.length} staff members</p>
+            </div>
+        </div>
+        <div class="bg-white p-5 rounded-xl shadow-sm border">
+            <h3 class="font-bold mb-4">Summary</h3>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="text-center p-3 bg-blue-50 rounded-lg">
+                    <p class="text-2xl font-bold text-blue-600">${allProducts.length}</p>
+                    <p class="text-sm text-gray-600">Total Products</p>
+                </div>
+                <div class="text-center p-3 bg-green-50 rounded-lg">
+                    <p class="text-2xl font-bold text-green-600">${allSuppliers.length}</p>
+                    <p class="text-sm text-gray-600">Total Suppliers</p>
+                </div>
+                <div class="text-center p-3 bg-purple-50 rounded-lg">
+                    <p class="text-2xl font-bold text-purple-600">${allUsers.length}</p>
+                    <p class="text-sm text-gray-600">Total Staff</p>
+                </div>
+            </div>
+        </div>
+    </div>`;
+
+            document.getElementById('pageContent').innerHTML = html;
+
+            setTimeout(() => {
+                if (document.getElementById('productsChart')) {
+                    new Chart(document.getElementById('productsChart'), {
+                        type: 'bar',
+                        data: {
+                            labels: months,
+                            datasets: [{
+                                label: 'Products Added',
+                                data: productData,
+                                backgroundColor: '#3b82f6',
+                                borderRadius: 8
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: true,
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+                                    title: { display: true, text: 'Number of Products' }
+                                }
+                            }
+                        }
+                    });
+                }
+                if (document.getElementById('suppliersChart')) {
+                    new Chart(document.getElementById('suppliersChart'), {
+                        type: 'line',
+                        data: {
+                            labels: months,
+                            datasets: [{
+                                label: 'Suppliers Added',
+                                data: supplierData,
+                                borderColor: '#10b981',
+                                backgroundColor: 'rgba(16,185,129,0.1)',
+                                tension: 0.4,
+                                fill: true
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: true,
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+                                    title: { display: true, text: 'Number of Suppliers' }
+                                }
+                            }
+                        }
+                    });
+                }
+                if (document.getElementById('usersChart')) {
+                    new Chart(document.getElementById('usersChart'), {
+                        type: 'bar',
+                        data: {
+                            labels: months,
+                            datasets: [{
+                                label: 'Staff Registered',
+                                data: userData,
+                                backgroundColor: '#8b5cf6',
+                                borderRadius: 8
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: true,
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+                                    title: { display: true, text: 'Number of Staff' }
+                                }
+                            }
+                        }
+                    });
+                }
+            }, 100);
+        }
+
+        function setupSearch() {
+            const searchInput = document.getElementById('globalSearch');
+            if (!searchInput) return;
+            searchInput.oninput = function () {
+                const term = this.value.toLowerCase().trim();
+                let container = null;
+                if (currentPage === 'inventory') container = document.getElementById('inventoryTableBody');
+                else if (currentPage === 'suppliers') container = document.getElementById('supplierTableBody');
+                else if (currentPage === 'staff') container = document.getElementById('staffTableBody');
+                if (!container) return;
+                const rows = container.querySelectorAll('tr');
+                rows.forEach(row => { const text = row.innerText.toLowerCase(); row.style.display = text.includes(term) ? '' : 'none'; });
+            };
+        }
+
+        async function loadStaffDropdowns() {
+            await fetchUsers();
+            const staffOptions = allUsers.map(u => `<option value="${u.user_id}">${u.full_name || u.username}</option>`).join('');
+            document.getElementById('prodHandledBy').innerHTML = '<option value="">Select Staff</option>' + staffOptions;
+            document.getElementById('movementHandledBy').innerHTML = '<option value="">Select Staff</option>' + staffOptions;
+            document.getElementById('supHandledBy').innerHTML = '<option value="">Select Staff</option>' + staffOptions;
+        }
+
+        window.openStockMovementModal = async (productId, productName, currentStock) => {
+            await loadStaffDropdowns();
+            document.getElementById('movementProductId').value = productId;
+            document.getElementById('movementProductName').value = productName;
+            document.getElementById('movementCurrentStock').value = currentStock;
+            document.getElementById('movementQuantity').value = '';
+            document.getElementById('movementReason').value = '';
+            document.getElementById('stockMovementModal').classList.remove('hidden');
+        };
+
+        async function processStockMovement() {
+            const productId = document.getElementById('movementProductId').value;
+            const quantity = parseInt(document.getElementById('movementQuantity').value);
+            const movementType = document.getElementById('movementType').value;
+            const reason = document.getElementById('movementReason').value;
+            const handledBy = document.getElementById('movementHandledBy').value;
+            if (!quantity || quantity <= 0) { showToast('Please enter valid quantity', 'error'); return; }
+            const result = await stockMovement(productId, quantity, movementType, reason, handledBy);
+            if (result.success) { showToast(`Stock ${movementType === 'OUT' ? 'reduced' : 'increased'}!`, 'success'); closeStockMovementModal(); await loadPage(currentPage); }
+            else showToast(result.error || 'Movement failed', 'error');
+        }
+        window.closeStockMovementModal = () => document.getElementById('stockMovementModal').classList.add('hidden');
+        document.getElementById('stockMovementForm')?.addEventListener('submit', async (e) => { e.preventDefault(); await processStockMovement(); });
+
+        window.openProductModal = async () => {
+            await fetchSuppliers(); await loadStaffDropdowns();
+            const select = document.getElementById('prodSupplierId');
+            select.innerHTML = '<option value="">Select Supplier</option>' + allSuppliers.map(s => `<option value="${s.supplier_id}">${s.supplier_name}</option>`).join('');
+            document.getElementById('editProductId').value = '';
+            document.getElementById('productForm').reset();
+            document.getElementById('productModalTitle').innerText = 'Add Product';
+            document.getElementById('productModal').classList.remove('hidden');
+        };
+
+        window.editProduct = async (id) => {
+            await fetchProducts(); await fetchSuppliers(); await loadStaffDropdowns();
+            const p = allProducts.find(p => p.product_id === id);
+            if (p) {
+                const select = document.getElementById('prodSupplierId');
+                select.innerHTML = '<option value="">Select Supplier</option>' + allSuppliers.map(s => `<option value="${s.supplier_id}" ${p.supplier_id === s.supplier_id ? 'selected' : ''}>${s.supplier_name}</option>`).join('');
+                document.getElementById('editProductId').value = p.product_id;
+                document.getElementById('prodName').value = p.product_name;
+                document.getElementById('prodSku').value = p.sku;
+                document.getElementById('prodCategory').value = p.category || '';
+                document.getElementById('prodQuantity').value = p.quantity;
+                document.getElementById('prodPrice').value = p.unit_price || 0;
+                document.getElementById('prodReorder').value = p.reorder_level || 10;
+                document.getElementById('prodLocation').value = p.location || '';
+                if (p.handled_by) document.getElementById('prodHandledBy').value = p.handled_by;
+                document.getElementById('productModalTitle').innerText = 'Edit Product';
+                document.getElementById('productModal').classList.remove('hidden');
+            }
+        };
+
+        window.deleteProductItem = async (id) => {
+            if (confirm('Delete this product? This action cannot be undone.')) {
+                const result = await deleteProduct(id);
+                if (result.success) {
+                    showToast('Product deleted', 'success');
+                    await loadPage(currentPage);
+                    if (currentPage !== 'dashboard') {
+                        await fetchDashboardStats();
+                    }
+                } else {
+                    showToast(result.error || 'Delete failed', 'error');
+                }
+            }
+        };
+
+        window.openSupplierModal = async () => {
+            await loadStaffDropdowns();
+            document.getElementById('editSupplierId').value = '';
+            document.getElementById('supplierForm').reset();
+            document.getElementById('supplierModalTitle').innerText = 'Add Supplier';
+            document.getElementById('supplierModal').classList.remove('hidden');
+        };
+
+        window.editSupplierItem = async (id) => {
+            await fetchSuppliers(); await loadStaffDropdowns();
+            const s = allSuppliers.find(s => s.supplier_id === id);
+            if (s) {
+                document.getElementById('editSupplierId').value = s.supplier_id;
+                document.getElementById('supName').value = s.supplier_name;
+                document.getElementById('supContact').value = s.contact_person || '';
+                document.getElementById('supEmail').value = s.email || '';
+                document.getElementById('supPhone').value = s.phone || '';
+                document.getElementById('supCategory').value = s.category || '';
+                document.getElementById('supLocation').value = s.location || '';
+                if (s.handled_by) document.getElementById('supHandledBy').value = s.handled_by;
+                document.getElementById('supplierModalTitle').innerText = 'Edit Supplier';
+                document.getElementById('supplierModal').classList.remove('hidden');
+            }
+        };
+
+        window.deleteSupplierItem = async (id) => {
+            if (confirm('Delete this supplier? This action cannot be undone.')) {
+                const result = await deleteSupplier(id);
+                if (result.success) {
+                    showToast('Supplier deleted', 'success');
+                    await loadPage(currentPage);
+                } else {
+                    showToast(result.error || 'Delete failed', 'error');
+                }
+            }
+        };
+
+        document.getElementById('productForm')?.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('editProductId').value;
+            const product = {
+                name: document.getElementById('prodName').value,
+                sku: document.getElementById('prodSku').value,
+                category: document.getElementById('prodCategory').value,
+                quantity: parseInt(document.getElementById('prodQuantity').value) || 0,
+                unit_price: parseFloat(document.getElementById('prodPrice').value) || 0,
+                reorder_level: parseInt(document.getElementById('prodReorder').value) || 10,
+                location: document.getElementById('prodLocation').value,
+                supplier_id: document.getElementById('prodSupplierId').value || null,
+                handled_by: document.getElementById('prodHandledBy').value || null
+            };
+            const result = await saveProduct(product, id || null);
+            if (result.success) { showToast(id ? 'Product updated!' : 'Product added!', 'success'); closeProductModal(); await loadPage(currentPage); }
+            else showToast('Error: ' + (result.error || 'Unknown'), 'error');
+        });
+
+        document.getElementById('supplierForm')?.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('editSupplierId').value;
+            const supplier = {
+                supplier_name: document.getElementById('supName').value,
+                contact_person: document.getElementById('supContact').value,
+                email: document.getElementById('supEmail').value,
+                phone: document.getElementById('supPhone').value,
+                category: document.getElementById('supCategory').value,
+                location: document.getElementById('supLocation').value,
+                handled_by: document.getElementById('supHandledBy').value || null
+            };
+            const result = await saveSupplier(supplier, id || null);
+            if (result.success) { showToast(id ? 'Supplier updated!' : 'Supplier added!', 'success'); closeSupplierModal(); await loadPage(currentPage); }
+            else showToast('Error: ' + (result.error || 'Unknown'), 'error');
+        });
+
+        document.getElementById('profileForm')?.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const pass = document.getElementById('profilePassword').value, confirm = document.getElementById('profileConfirmPassword').value;
+            if (pass && pass !== confirm) { showToast('Passwords do not match!', 'error'); return; }
+            const result = await updateUserProfile({ full_name: document.getElementById('profileFullName').value, email: document.getElementById('profileEmail').value, password: pass || undefined });
+            if (result.success) { showToast('Profile updated!', 'success'); closeProfileModal(); await fetchUserProfile(); await loadPage(currentPage); }
+            else showToast('Error: ' + (result.error || 'Unknown'), 'error');
+        });
+
+        function closeProductModal() { document.getElementById('productModal').classList.add('hidden'); }
+        function closeSupplierModal() { document.getElementById('supplierModal').classList.add('hidden'); }
+        window.openProfileModal = async () => { await fetchUserProfile(); document.getElementById('profileFullName').value = currentUser?.full_name || ''; document.getElementById('profileEmail').value = currentUser?.email || ''; document.getElementById('profileUsername').value = currentUser?.username || ''; document.getElementById('profilePassword').value = ''; document.getElementById('profileConfirmPassword').value = ''; document.getElementById('profileModal').classList.remove('hidden'); };
+        function closeProfileModal() { document.getElementById('profileModal').classList.add('hidden'); }
+        window.closeProductModal = closeProductModal; window.closeSupplierModal = closeSupplierModal; window.closeProfileModal = closeProfileModal;
+        window.exportProductsToCSV = exportProductsToCSV; window.exportSuppliersToCSV = exportSuppliersToCSV; window.exportUsersToCSV = exportUsersToCSV; window.printPage = printPage;
+
+        async function loadPage(page) {
+            currentPage = page;
+            document.querySelectorAll('.nav-link, .mobile-nav-link').forEach(link => { if (link.dataset.page === page) { link.classList.add('bg-blue-600', 'text-white'); link.classList.remove('text-gray-600'); } else { link.classList.remove('bg-blue-600', 'text-white'); link.classList.add('text-gray-600'); } });
+            document.getElementById('pageContent').innerHTML = '<div class="flex justify-center items-center h-64"><div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div></div>';
+            if (page === 'dashboard') await renderDashboard();
+            else if (page === 'inventory') await renderInventory();
+            else if (page === 'suppliers') await renderSuppliers();
+            else if (page === 'staff') await renderStaff();
+            else if (page === 'reports') await renderReports();
+            setTimeout(setupSearch, 100);
+        }
+        window.loadPage = loadPage;
+
+        document.querySelectorAll('.nav-link, .mobile-nav-link').forEach(link => link.addEventListener('click', (e) => { e.preventDefault(); loadPage(link.dataset.page); }));
+        document.getElementById('logoutBtn').addEventListener('click', () => { localStorage.removeItem('authToken'); window.location.href = 'login.html'; });
+        fetchUserProfile(); loadPage('dashboard');
+    </script>
+</body>
+
+</html>
